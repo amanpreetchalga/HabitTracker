@@ -91,10 +91,10 @@ fun IncompleteHabitCard(habit: Habit) {
         Text("Duration: ${habit.duration} mins")
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
-            IconButton(onClick = {}) { Icon(Icons.Default.PlayArrow, null) }
-            IconButton(onClick = {}) { Icon(Icons.Default.Edit, null) }
-            IconButton(onClick = {}) { Icon(Icons.Default.Check, null) }
-            IconButton(onClick = {}) { Icon(Icons.Default.Delete, null) }
+            IconButton(onClick = {}) { Icon(Icons.Default.PlayArrow, "Start") }
+            IconButton(onClick = {}) { Icon(Icons.Default.Edit, "Edit") }
+            IconButton(onClick = {}) { Icon(Icons.Default.Check, "Complete") }
+            IconButton(onClick = {}) { Icon(Icons.Default.Delete, "Delete") }
         }
     }
 }
