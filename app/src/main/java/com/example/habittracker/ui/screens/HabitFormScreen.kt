@@ -27,17 +27,25 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.habittracker.ui.components.DurationPicker
+import com.example.habittracker.ui.viewmodels.HabitViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.habittracker.model.HabitEntity
+import kotlinx.coroutines.flow.flowOf
 
 
 @Composable
 fun HabitFormScreen(
     navController: NavController,
-    habitId: Int?
+    habitId: Int?,
+    viewModel: HabitViewModel
 ) {
+    val existingHabit = habitId?.let { id ->
+        viewModel.habits.find { it.id == id }
+    }
     val isEditing = habitId != null
+    var title by remember { mutableStateOf(existingHabit?.title ?: "") }
+    var duration by remember { mutableStateOf(existingHabit?.duration ?: 30) }
 
-    var title by remember { mutableStateOf("") }
-    var duration by remember { mutableStateOf(30) }
 
     Column(
         modifier = Modifier
@@ -79,8 +87,14 @@ fun HabitFormScreen(
 
         Button(
             onClick = {
-                // In Phase 4, you'll add ViewModel save here
-                navController.popBackStack()
+                if (title.isNotBlank()) {
+                    if (isEditing && habitId != null) {
+                        viewModel.updateHabit(habitId, title.trim(), duration)
+                    } else {
+                        viewModel.addHabit(title.trim(), duration)
+                    }
+                    navController.popBackStack()
+                }
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -93,9 +107,27 @@ fun HabitFormScreen(
 
 @Preview(showBackground = true)
 @Composable
-fun previewHabitFormScreen() {
+fun PreviewHabitFormScreen() {
     val navController = rememberNavController()
-    HabitFormScreen(navController = navController, habitId = null)
+
+    val fakeRepo = remember {
+        object : com.example.habittracker.data.HabitRepository(
+            dao = object : com.example.habittracker.data.HabitDao {
+                override fun getAllHabits() = flowOf(emptyList<HabitEntity>())
+                override suspend fun insertHabit(habit: HabitEntity) {}
+                override suspend fun updateHabit(habit: HabitEntity) {}
+                override suspend fun deleteHabit(habit: HabitEntity) {}
+            }
+        ) {}
+    }
+
+    val previewViewModel = remember { HabitViewModel(fakeRepo) }
+
+    HabitFormScreen(
+        navController = navController,
+        habitId = null,
+        viewModel = previewViewModel
+    )
 }
 
 @Preview(
@@ -106,5 +138,23 @@ fun previewHabitFormScreen() {
 @Composable
 fun PreviewHabitFormScreenDark() {
     val navController = rememberNavController()
-    HabitFormScreen(navController = navController, habitId = null)
+
+    val fakeRepo = remember {
+        object : com.example.habittracker.data.HabitRepository(
+            dao = object : com.example.habittracker.data.HabitDao {
+                override fun getAllHabits() = flowOf(emptyList<HabitEntity>())
+                override suspend fun insertHabit(habit: HabitEntity) {}
+                override suspend fun updateHabit(habit: HabitEntity) {}
+                override suspend fun deleteHabit(habit: HabitEntity) {}
+            }
+        ) {}
+    }
+
+    val previewViewModel = remember { HabitViewModel(fakeRepo) }
+
+    HabitFormScreen(
+        navController = navController,
+        habitId = null,
+        viewModel = previewViewModel
+    )
 }

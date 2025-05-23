@@ -2,34 +2,62 @@ package com.example.habittracker.ui.viewmodels
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.habittracker.data.HabitRepository
 import com.example.habittracker.model.Habit
+import com.example.habittracker.model.HabitEntity
 import com.example.habittracker.model.HabitStatus
+import kotlinx.coroutines.launch
 
-class HabitViewModel : ViewModel() {
+open class HabitViewModel(
+    private val repository: HabitRepository
+) : ViewModel() {
 
     // Reactive list — Compose will observe changes
     private val _habits = mutableStateListOf<Habit>()
     val habits: List<Habit> get() = _habits
 
     init {
-        _habits.addAll(
-            listOf(
-                Habit(0, "", 0, HabitStatus.EMPTY),
-                Habit(1, "Workout", 30, HabitStatus.INCOMPLETE),
-                Habit(2, "Read Book", 20, HabitStatus.COMPLETE),
-            )
-        )
+        viewModelScope.launch {
+            repository.habits.collect { entities ->
+                _habits.clear()
+                _habits.addAll(entities.map {
+                    Habit(it.id, it.title, it.duration, it.status)
+                })
+            }
+        }
     }
 
     fun addHabit(title: String, duration: Int) {
-        val newId = (_habits.maxOfOrNull { it.id } ?: 0) + 1
-        _habits.add(Habit(newId, title, duration, HabitStatus.INCOMPLETE))
+        viewModelScope.launch {
+            val entity = HabitEntity(title = title, duration = duration, status = HabitStatus.INCOMPLETE)
+            repository.addHabit(entity)
+        }
     }
 
     fun markComplete(habitId: Int) {
-        val index = _habits.indexOfFirst { it.id == habitId }
-        if (index != -1) {
-            _habits[index] = _habits[index].copy(status = HabitStatus.COMPLETE)
+        viewModelScope.launch {
+            val habit = _habits.find { it.id == habitId } ?: return@launch
+            repository.updateHabit(
+                HabitEntity(habit.id, habit.title, habit.duration, HabitStatus.COMPLETE)
+            )
+        }
+    }
+
+    fun deleteHabit(habitId: Int) {
+        viewModelScope.launch {
+            val habit = _habits.find { it.id == habitId } ?: return@launch
+            repository.deleteHabit(
+                HabitEntity(habit.id, habit.title, habit.duration, habit.status)
+            )
+        }
+    }
+
+    fun updateHabit(id: Int, title: String, duration: Int) {
+        viewModelScope.launch {
+            repository.updateHabit(
+                HabitEntity(id = id, title = title, duration = duration, status = HabitStatus.INCOMPLETE)
+            )
         }
     }
 }

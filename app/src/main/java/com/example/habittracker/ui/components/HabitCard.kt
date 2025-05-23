@@ -1,6 +1,8 @@
 package com.example.habittracker.ui.components
 
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
@@ -15,6 +17,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,6 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.habittracker.model.Habit
 import com.example.habittracker.model.HabitStatus
+import com.example.habittracker.ui.theme.LocalHabitColors
 
 /**
  * This composable function renders a habit card with visual cues based on its status.
@@ -37,13 +41,22 @@ import com.example.habittracker.model.HabitStatus
  * @param onClick Optional callback triggered when the card is clicked.
  */
 @Composable
-fun HabitCard(habit: Habit, onClick: () -> Unit = {}) {
+fun HabitCard(
+    habit: Habit,
+    onClick: () -> Unit = {},
+    onEdit: (Habit) -> Unit = {},
+    onDelete: (Habit) -> Unit = {},
+    onMarkComplete: (Habit) -> Unit = {},
+    onStart: (Habit) -> Unit = {}
+) {
+    val habitColors = LocalHabitColors.current
     val cardColor by animateColorAsState(
-        when (habit.status) {
-            HabitStatus.EMPTY -> Color.LightGray
-            HabitStatus.INCOMPLETE -> Color(0xFFFFCDD2)
-            HabitStatus.COMPLETE -> Color(0xFFC8E6C9)
+        targetValue = when (habit.status) {
+            HabitStatus.EMPTY -> habitColors.empty
+            HabitStatus.INCOMPLETE -> habitColors.incomplete
+            HabitStatus.COMPLETE -> habitColors.complete
         },
+        animationSpec = tween(durationMillis = 500),
         label = "cardColorAnimation"
     )
 
@@ -51,13 +64,22 @@ fun HabitCard(habit: Habit, onClick: () -> Unit = {}) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .clickable { onClick() },
+            .clickable { onClick() }
+            .animateContentSize(
+                animationSpec = tween(durationMillis = 300)
+            ),
         colors = CardDefaults.cardColors(containerColor = cardColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         when (habit.status) {
             HabitStatus.EMPTY -> EmptyHabitCard()
-            HabitStatus.INCOMPLETE -> IncompleteHabitCard(habit)
+            HabitStatus.INCOMPLETE -> IncompleteHabitCard(
+                habit = habit,
+                onEdit = onEdit,
+                onDelete = onDelete,
+                onMarkComplete = onMarkComplete,
+                onStart = onStart
+            )
             HabitStatus.COMPLETE -> CompleteHabitCard(habit)
         }
     }
@@ -85,19 +107,37 @@ fun EmptyHabitCard() {
  * @param habit The [Habit] containing title and duration data.
  */
 @Composable
-fun IncompleteHabitCard(habit: Habit) {
+fun IncompleteHabitCard(
+    habit: Habit,
+    onEdit: (Habit) -> Unit,
+    onDelete: (Habit) -> Unit,
+    onMarkComplete: (Habit) -> Unit,
+    onStart: (Habit) -> Unit = {}
+) {
     Column(modifier = Modifier.padding(16.dp)) {
-        Text(habit.title, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        Text(habit.title, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
         Text("Duration: ${habit.duration} mins")
 
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
-            IconButton(onClick = {}) { Icon(Icons.Default.PlayArrow, "Start") }
-            IconButton(onClick = {}) { Icon(Icons.Default.Edit, "Edit") }
-            IconButton(onClick = {}) { Icon(Icons.Default.Check, "Complete") }
-            IconButton(onClick = {}) { Icon(Icons.Default.Delete, "Delete") }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceAround
+        ) {
+            IconButton(onClick = { onStart(habit) }) {
+                Icon(Icons.Default.PlayArrow, contentDescription = "Start")
+            }
+            IconButton(onClick = { onEdit(habit) }) {
+                Icon(Icons.Default.Edit, contentDescription = "Edit")
+            }
+            IconButton(onClick = { onMarkComplete(habit) }) {
+                Icon(Icons.Default.Check, contentDescription = "Complete")
+            }
+            IconButton(onClick = { onDelete(habit) }) {
+                Icon(Icons.Default.Delete, contentDescription = "Delete")
+            }
         }
     }
 }
+
 
 /**
  * Renders a card representing a completed habit.
