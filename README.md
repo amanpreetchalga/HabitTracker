@@ -1,34 +1,25 @@
 # 📘 HabitTracker
 
-A clean, modern **Habit Tracking App UI** built using **Jetpack Compose** — currently showcasing static layouts for various habit states. Designed to be expanded into a full-featured personal productivity tracker.
-
+A clean, modern **Habit Tracking App UI** built using **Jetpack Compose** and **Material 3**, featuring dynamic theme switching, animated UI, and modular architecture.
 ---
 
 ## 🎯 Features (Current Version)
 
-- ✅ **Jetpack Compose UI**
-- ✅ **Card-based habit layout**
-- ✅ **Dynamic card colors**:
-    - 🩶 Empty card (Add habit)
-    - 🔴 Incomplete habit (with action buttons)
-    - ✅ Completed habit (visual indicator)
-- ✅ **Responsive LazyColumn layout**
-- ✅ **Material Design styling**
-- ✅ Modular components & theme support
+- ✅ Add, edit, and delete habits with intuitive UI
+- 🌗 Toggle between **light** and **dark** themes
+- 🧩 Animated transitions for smooth interactions
+- 📦 Fully modular structure (UI, ViewModel, Data Layer)
+- 🧠 Semantic color scheme via `MaterialTheme`
+- 💥 Confirmation dialogs and toast feedback
+- 🎯 Scalable architecture, perfect for learning or extension
 
 ---
 
 ## 🧠 Tech Stack
 
-- 🔷 **Kotlin**
-- 🧩 **Jetpack Compose 1.8.1**
-- 🎨 **Material 3 UI Components**
-- 🧱 **Kotlin DSL** with `libs.versions.toml`
-- ✅ AndroidX, Compose Animation, Foundation, Runtime, ConstraintLayout
-
----
-
-## 📸 Screenshots
-
-> _(You can add images later — just drag and drop into the GitHub issue/comment or include them like this:)_
-
+- Jetpack Compose
+- Material 3
+- Room (for future persistence)
+- ViewModel + State Management
+- Kotlin DSL + Version Catalog
+- Custom Theming via `CompositionLocal`
